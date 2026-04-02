@@ -177,7 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
         dynamicGrid.classList.add('fading');
         
         setTimeout(() => {
-            const filteredData = (menuData[currentCategory] || []).filter(item => 
+            // Robust category lookup
+            const targetCat = Object.keys(menuData).find(k => k.trim().toLowerCase() === currentCategory.trim().toLowerCase());
+            const filteredData = (menuData[targetCat] || []).filter(item => 
                 item.name.toLowerCase().includes(currentSearch.toLowerCase())
             );
 
@@ -249,16 +251,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function switchCategory(cat) {
-        currentCategory = cat;
+        if (!cat) return;
+        currentCategory = cat.trim();
         
-        // Show menu content if hidden
-        if (menuContentWrapper && menuContentWrapper.classList.contains('menu-content-hidden')) {
+        // Ensure menu content is visible
+        if (menuContentWrapper) {
             menuContentWrapper.classList.remove('menu-content-hidden');
             menuContentWrapper.classList.add('menu-content-visible');
+            menuContentWrapper.style.display = 'block'; // Force display override
         }
 
         filterBtns.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.category === cat);
+            const btnCat = btn.dataset.category ? btn.dataset.category.trim().toLowerCase() : '';
+            const matchCat = currentCategory.toLowerCase();
+            btn.classList.toggle('active', btnCat === matchCat);
         });
         
         renderMenu();
